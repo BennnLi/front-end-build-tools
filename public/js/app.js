@@ -92,7 +92,7 @@ async function addRepo(e) {
       body: { name, url, buildScript, buildCwd, packDir, scriptType: 'inline' }
     });
     document.getElementById('addRepoForm').reset();
-    document.getElementById('buildScript').value = 'npm install\nnpm run build';
+    document.getElementById('buildScript').value = 'npm install && npx vite build';
     loadRepos();
   } catch (err) {
     alert('添加失败: ' + err.message);

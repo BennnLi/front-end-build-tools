@@ -51,7 +51,7 @@ function addRepo({ name, url, buildScript, buildCwd, scriptType, scriptFile, pac
     id: require('uuid').v4(),
     name,
     url,
-    buildScript: buildScript || 'npm run build',
+    buildScript: buildScript || 'npm install && npx vite build',
     buildCwd: buildCwd || '',
     scriptType: scriptType || 'inline', // 'inline' | 'file'
     scriptFile: scriptFile || '',        // path to uploaded script file
