@@ -410,7 +410,7 @@ async function loadTasks() {
       </div>
       <span class="status status-${t.status}">${statusText(t.status)}</span>
       <div class="task-actions">
-        ${t.status === 'success' ? `<a class="btn btn-small btn-success" href="/api/tasks/${t.id}/download">下载</a>` : ''}
+        ${t.status === 'success' ? `<button class="btn btn-small btn-success" onclick="downloadArtifact(${t.id})">下载</button>` : ''}
         ${isAdmin() && (t.status === 'success' || t.status === 'failed') ? `<button class="btn btn-small btn-danger" onclick="deleteTask(${t.id})">删除</button>` : ''}
       </div>
     </div>
@@ -472,6 +472,29 @@ async function triggerCleanup() {
     }
   });
 })();
+
+async function downloadArtifact(taskId) {
+  try {
+    const res = await fetch(`/api/tasks/${taskId}/download`, {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!res.ok) throw new Error('下载失败');
+    const blob = await res.blob();
+    const disposition = res.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename="?(.+?)"?$/);
+    const filename = match ? match[1] : `task-${taskId}.zip`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('下载失败: ' + err.message);
+  }
+}
 
 // ---- Logout ----
 
