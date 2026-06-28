@@ -481,8 +481,15 @@ async function downloadArtifact(taskId) {
     if (!res.ok) throw new Error('下载失败');
     const blob = await res.blob();
     const disposition = res.headers.get('Content-Disposition') || '';
-    const match = disposition.match(/filename="?(.+?)"?$/);
-    const filename = match ? match[1] : `task-${taskId}.zip`;
+    // Prefer filename* (RFC 5987), fallback to filename
+    const starMatch = disposition.match(/filename\*=UTF-8''([^;]+)/);
+    const plainMatch = disposition.match(/filename="([^"]*)"/);
+    let filename = `task-${taskId}.zip`;
+    if (starMatch) {
+      filename = decodeURIComponent(starMatch[1]);
+    } else if (plainMatch) {
+      filename = decodeURIComponent(plainMatch[1]);
+    }
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

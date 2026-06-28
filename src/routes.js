@@ -326,7 +326,15 @@ router.get('/api/tasks/:id/download', (req, res) => {
     return res.status(404).json({ error: 'Artifact file not found' });
   }
 
-  const fileName = path.basename(task.artifactPath);
+  // Sanitize filename: ASCII-only, no spaces, no special chars
+  let fileName = path.basename(task.artifactPath);
+  const ext = path.extname(fileName);
+  let base = path.basename(fileName, ext);
+  // Remove non-ASCII and unsafe chars, replace whitespace with hyphens
+  base = base.replace(/[^\x00-\x7F]/g, '').replace(/[\/\\:*?"<>|#%&{}\$!@+=\[\]`~]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^[-.]+|[-.]+$/g, '');
+  if (!base) base = `artifact-${task.id}`;
+  fileName = base + ext;
+
   res.download(task.artifactPath, fileName);
 });
 
