@@ -266,6 +266,8 @@ async function openBuildModal(repoId) {
 
     if (branches.length > 0) {
       select.innerHTML = branches.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('');
+      // Trigger commit display for the auto-selected branch
+      onBranchChange();
     } else if (fetchError) {
       const short = fetchError.length > 80 ? fetchError.substring(0, 80) + '...' : fetchError;
       select.innerHTML = `<option>⚠ ${escapeHtml(short)}</option>`;
