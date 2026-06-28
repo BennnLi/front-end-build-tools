@@ -145,7 +145,9 @@ async function runBuild(repoId, taskId) {
 
     const actualPack = (repo.packDir && fs.existsSync(packSource)) ? packSource : buildCwd;
     log(`Creating artifact archive from: ${repo.packDir || '(root)'}`);
-    const artifactPath = path.join(ARTIFACTS_DIR, `${repo.name}-${task.branch}-${taskId}.zip`);
+    // Sanitize repo name for the artifact filename: ASCII-only, no spaces
+    const safeName = repo.name.replace(/[^\x00-\x7F]/g, '').replace(/[\/\\:*?"<>|#%&{}\$!@+=\[\]`~]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^[-.]+|[-.]+$/g, '') || 'repo';
+    const artifactPath = path.join(ARTIFACTS_DIR, `${safeName}-${task.branch}-${taskId}.zip`);
     await createZip(actualPack, artifactPath);
 
     const stats = fs.statSync(artifactPath);
