@@ -472,7 +472,11 @@ function startAutoRefresh() {
   }, 5000);
 }
 
-// Init
-loadRepos();
-loadTasks();
-startAutoRefresh();
+// Init — check auth first
+if (!getToken()) {
+  window.location.href = '/login.html';
+} else {
+  loadRepos();
+  loadTasks();
+  startAutoRefresh();
+}

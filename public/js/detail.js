@@ -123,4 +123,9 @@ async function loadLog(taskId, status) {
   }
 }
 
-loadTaskDetail();
+// Check auth first
+if (!getToken()) {
+  window.location.href = '/login.html';
+} else {
+  loadTaskDetail();
+}

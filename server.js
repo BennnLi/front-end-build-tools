@@ -69,36 +69,27 @@ app.post('/api/logout', (req, res) => {
   res.json({ ok: true });
 });
 
-// ---- Auth middleware ----
+// ---- Auth middleware (API only) ----
 
-app.use((req, res, next) => {
-  // Allow static assets and login without auth
-  if (req.path.endsWith('.css') || req.path.endsWith('.js') || req.path === '/login.html' || req.path === '/api/login') {
-    return next();
-  }
+app.use('/api', (req, res, next) => {
+  // Login endpoint is public
+  if (req.path === '/login') return next();
 
   const auth = req.headers.authorization;
   const token = auth && auth.startsWith('Bearer ') ? auth.slice(7) : null;
   const user = token ? validateToken(token) : null;
 
   if (!user) {
-    if (req.path.startsWith('/api/')) {
-      return res.status(401).json({ error: '未登录或 token 已过期' });
-    }
-    return res.redirect('/login.html');
+    return res.status(401).json({ error: '未登录或 token 已过期' });
   }
   next();
 });
 
-// ---- Static files ----
+// ---- Static files (public) ----
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Redirect root to index.html
+// Root → index.html (auth checked by client-side JS)
 app.get('/', (req, res) => {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) return res.redirect('/login.html');
-  const user = validateToken(auth.slice(7));
-  if (!user) return res.redirect('/login.html');
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
