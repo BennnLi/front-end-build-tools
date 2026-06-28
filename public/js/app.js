@@ -143,7 +143,9 @@ async function openEditModal(repoId) {
     document.getElementById('tabFile').classList.add('hidden');
     // Load script content
     try {
-      const res = await fetch(`/api/repos/${repoId}/script`);
+      const res = await fetch(`/api/repos/${repoId}/script`, {
+        headers: { 'Authorization': 'Bearer ' + getToken() }
+      });
       const text = await res.text();
       document.getElementById('editBuildScript').value = text;
     } catch {
@@ -217,6 +219,7 @@ async function saveEdit() {
         formData.append('script', selectedScriptFile);
         await fetch(`/api/repos/${repoId}/script`, {
           method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + getToken() },
           body: formData
         }).then(r => r.json());
       }
@@ -248,8 +251,11 @@ async function openBuildModal(repoId) {
   document.getElementById('buildModal').classList.remove('hidden');
 
   try {
-    const result = await fetch(`/api/repos/${repoId}/branches`).then(r => r.json());
-    // Result is either a plain array (success) or { branches, error } (partial failure)
+    // Use api() so the Authorization header is included
+    const res = await fetch(`/api/repos/${repoId}/branches`, {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    const result = await res.json();
     const branches = Array.isArray(result) ? result : (result.branches || []);
     const fetchError = Array.isArray(result) ? null : result.error;
 

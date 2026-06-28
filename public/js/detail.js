@@ -113,7 +113,9 @@ async function loadTaskDetail() {
 
 async function loadLog(taskId, status) {
   try {
-    const res = await fetch(`/api/tasks/${taskId}/log`);
+    const res = await fetch(`/api/tasks/${taskId}/log`, {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
     const text = await res.text();
     document.getElementById('logContent').textContent = text || '暂无日志';
     // Auto scroll to bottom
