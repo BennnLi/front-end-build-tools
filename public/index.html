@@ -65,7 +65,11 @@ npm run build</textarea>
         <p id="buildRepoName"></p>
         <div class="form-group">
           <label>选择分支</label>
-          <select id="branchSelect"></select>
+          <select id="branchSelect" onchange="onBranchChange()"></select>
+        </div>
+        <div id="branchCommits" style="display:none;margin-top:12px">
+          <label style="font-size:13px;color:#888">最近 5 个提交</label>
+          <div id="commitList" style="max-height:180px;overflow-y:auto;margin-top:4px"></div>
         </div>
         <div class="modal-actions">
           <button class="btn" onclick="closeBuildModal()">取消</button>

@@ -251,6 +251,8 @@ async function openBuildModal(repoId) {
 
   const select = document.getElementById('branchSelect');
   select.innerHTML = '<option>加载中...</option>';
+  document.getElementById('branchCommits').style.display = 'none';
+  document.getElementById('commitList').innerHTML = '';
   document.getElementById('buildModal').classList.remove('hidden');
 
   try {
@@ -278,6 +280,37 @@ async function openBuildModal(repoId) {
     } else {
       select.innerHTML = '<option>获取分支失败</option>';
     }
+  }
+}
+
+async function onBranchChange() {
+  const branch = document.getElementById('branchSelect').value;
+  if (!branch || branch.includes('无可用') || branch.includes('加载') || branch.includes('失败') || branch.includes('⚠')) return;
+
+  const el = document.getElementById('branchCommits');
+  const list = document.getElementById('commitList');
+  el.style.display = 'block';
+  list.innerHTML = '<span style="color:#999;font-size:12px">加载中...</span>';
+
+  try {
+    const res = await fetch(`/api/repos/${currentBuildRepoId}/commits?branch=${encodeURIComponent(branch)}`, {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    });
+    if (!res.ok) { list.innerHTML = ''; return; }
+    const commits = await res.json();
+    if (!commits.length) {
+      list.innerHTML = '<span style="color:#999;font-size:12px">暂无提交</span>';
+      return;
+    }
+    list.innerHTML = commits.map(c => `
+      <div class="commit-item">
+        <span class="commit-hash">${escapeHtml(c.shortHash)}</span>
+        ${escapeHtml(c.message)}
+        <div class="commit-meta">${escapeHtml(c.author)} · ${c.date}</div>
+      </div>
+    `).join('');
+  } catch {
+    list.innerHTML = '';
   }
 }
 

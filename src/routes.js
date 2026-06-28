@@ -94,6 +94,22 @@ router.delete('/api/repos/:id', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+// Get recent commits for a branch
+router.get('/api/repos/:id/commits', async (req, res) => {
+  const repo = db.getRepo(req.params.id);
+  if (!repo) return res.status(404).json({ error: 'Repo not found' });
+
+  const branch = req.query.branch;
+  if (!branch) return res.status(400).json({ error: 'branch query param required' });
+
+  try {
+    const commits = await git.getLatestCommits(repo.id, branch, 5);
+    res.json(commits);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get branches for a repo
 router.get('/api/repos/:id/branches', async (req, res) => {
   const repo = db.getRepo(req.params.id);

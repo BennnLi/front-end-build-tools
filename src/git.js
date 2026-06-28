@@ -45,6 +45,7 @@ const SOFT_FAIL_PATTERNS = [
   /does not have any commits yet/i,
   /does not have a checked out branch/i,
   /no such ref/i,
+  /ambiguous argument/i,
   /couldn't find remote ref/i,
   /SSL_ERROR_SYSCALL/i,
   /Could not resolve host/i,
