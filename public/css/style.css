@@ -107,6 +107,11 @@ header h1 { font-size: 24px; }
   border-color: #52c41a;
 }
 
+.btn-success:hover {
+  background: #73d13d;
+  color: #fff;
+}
+
 /* Repo list */
 .repo-item {
   display: flex;
