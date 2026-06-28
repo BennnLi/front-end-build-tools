@@ -1,0 +1,327 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f0f2f5;
+  color: #333;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+header h1 { font-size: 24px; }
+
+.header-actions { display: flex; gap: 8px; }
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Form */
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.form-group.flex-2 { flex: 2; }
+
+.form-group label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  color: #333;
+}
+
+.btn:hover { background: #f5f5f5; }
+
+.btn-primary {
+  background: #1677ff;
+  color: #fff;
+  border-color: #1677ff;
+}
+
+.btn-primary:hover { background: #4096ff; }
+
+.btn-danger {
+  background: #ff4d4f;
+  color: #fff;
+  border-color: #ff4d4f;
+}
+
+.btn-danger:hover { background: #ff7875; }
+
+.btn-small { padding: 4px 12px; font-size: 13px; }
+
+.btn-success {
+  background: #52c41a;
+  color: #fff;
+  border-color: #52c41a;
+}
+
+/* Repo list */
+.repo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.repo-item:last-child { border-bottom: none; }
+
+.repo-info h3 {
+  font-size: 16px;
+  margin-bottom: 2px;
+}
+
+.repo-info p {
+  font-size: 13px;
+  color: #888;
+}
+
+.repo-actions { display: flex; gap: 8px; }
+
+/* Task list */
+.task-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.task-item:last-child { border-bottom: none; }
+
+.task-id {
+  display: inline-block;
+  width: 48px;
+  text-align: center;
+  font-weight: bold;
+  color: #1677ff;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.task-id:hover { text-decoration: underline; }
+
+.task-info { flex: 1; margin-left: 12px; }
+
+.task-info .task-title {
+  font-size: 14px;
+}
+
+.task-info .task-meta {
+  font-size: 12px;
+  color: #888;
+}
+
+.task-actions { margin-left: 12px; }
+
+/* Status badges */
+.status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-waiting { background: #fff7e6; color: #d48806; }
+.status-running { background: #e6f7ff; color: #1677ff; }
+.status-success { background: #f6ffed; color: #52c41a; }
+.status-failed { background: #fff2f0; color: #ff4d4f; }
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal.hidden { display: none; }
+
+.modal-content {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.modal-content.modal-wide {
+  min-width: 550px;
+  max-width: 700px;
+}
+
+.modal-content h3 { margin-bottom: 12px; }
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 16px;
+}
+
+.tab {
+  padding: 8px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+
+.tab.active {
+  color: #1677ff;
+  border-bottom-color: #1677ff;
+  font-weight: 500;
+}
+
+.tab-content { }
+.tab-content.hidden { display: none; }
+
+/* Textarea */
+.script-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.script-textarea:focus {
+  outline: none;
+  border-color: #1677ff;
+  box-shadow: 0 0 0 2px rgba(22,119,255,0.15);
+}
+
+/* Upload area */
+.upload-area {
+  border: 2px dashed #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+  border-color: #1677ff;
+  background: #f0f7ff;
+}
+
+/* Detail page */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.detail-header h2 { margin: 0; border: none; padding: 0; }
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+  font-size: 14px;
+}
+
+.detail-grid dt { color: #888; }
+.detail-grid dd { font-weight: 500; }
+
+/* Commits */
+.commit-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 13px;
+}
+
+.commit-item:last-child { border-bottom: none; }
+
+.commit-hash {
+  font-family: monospace;
+  color: #1677ff;
+}
+
+.commit-meta { color: #888; font-size: 12px; }
+
+/* Log */
+.log-output {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 16px;
+  border-radius: 4px;
+  max-height: 500px;
+  overflow-y: auto;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.empty { color: #999; text-align: center; padding: 20px; }

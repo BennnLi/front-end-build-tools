@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>构建工具</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔧 构建工具</h1>
+      <div class="header-actions">
+        <button class="btn btn-small" onclick="refreshAll()">刷新</button>
+        <button class="btn btn-small btn-danger" onclick="triggerCleanup()">清理产物</button>
+      </div>
+    </header>
+
+    <!-- Add Repo Form -->
+    <section class="card">
+      <h2>添加仓库</h2>
+      <form id="addRepoForm" onsubmit="return addRepo(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>仓库名称</label>
+            <input type="text" id="repoName" required placeholder="my-project">
+          </div>
+          <div class="form-group flex-2">
+            <label>Git 地址</label>
+            <input type="text" id="repoUrl" required placeholder="https://github.com/user/repo.git">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>构建子目录 <small style="color:#999">（脚本执行位置）</small></label>
+            <input type="text" id="buildCwd" placeholder="留空则用根目录">
+          </div>
+          <div class="form-group">
+            <label>打包目录 <small style="color:#999">（产物目录，如 dist）</small></label>
+            <input type="text" id="packDir" placeholder="留空则打包整个目录">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:8px">
+          <label>构建脚本 <small style="color:#999">（shell 命令，支持多行）</small></label>
+          <textarea id="buildScript" class="script-textarea" rows="3" placeholder="npm install&#10;npm run build">npm install
+npm run build</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">添加仓库</button>
+      </form>
+    </section>
+
+    <!-- Repo List -->
+    <section class="card">
+      <h2>仓库列表</h2>
+      <div id="repoList" class="repo-list">
+        <p class="empty">暂无仓库</p>
+      </div>
+    </section>
+
+    <!-- Build Modal -->
+    <div id="buildModal" class="modal hidden">
+      <div class="modal-content">
+        <h3>触发构建</h3>
+        <p id="buildRepoName"></p>
+        <div class="form-group">
+          <label>选择分支</label>
+          <select id="branchSelect"></select>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" onclick="closeBuildModal()">取消</button>
+          <button class="btn btn-primary" onclick="triggerBuild()">开始构建</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Script Modal -->
+    <div id="editModal" class="modal hidden">
+      <div class="modal-content modal-wide">
+        <h3>编辑构建脚本</h3>
+        <p id="editRepoName" style="color:#888;margin-bottom:12px"></p>
+        <input type="hidden" id="editRepoId">
+        <div class="tabs">
+          <button class="tab active" data-tab="inline" onclick="switchTab('inline')">内联脚本</button>
+          <button class="tab" data-tab="file" onclick="switchTab('file')">上传脚本文件</button>
+        </div>
+        <div id="tabInline" class="tab-content">
+          <div class="form-group">
+            <label>Shell 脚本（支持多行）</label>
+            <textarea id="editBuildScript" class="script-textarea" rows="8" placeholder="npm install&#10;npm run build"></textarea>
+          </div>
+          <div class="form-group">
+            <label>构建子目录</label>
+            <input type="text" id="editBuildCwd" placeholder="留空则用根目录">
+          </div>
+          <div class="form-group">
+            <label>打包目录 <small style="color:#999">（产物目录，如 dist）</small></label>
+            <input type="text" id="editPackDir" placeholder="留空则打包整个目录">
+          </div>
+        </div>
+        <div id="tabFile" class="tab-content hidden">
+          <div class="form-group">
+            <label>上传脚本文件 <small style="color:#999">（.sh / .bat / .ps1 / 任意文本文件）</small></label>
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="scriptFileInput" onchange="onFileSelected(event)" style="display:none">
+              <div id="uploadPrompt" style="text-align:center;padding:20px">
+                <p style="color:#999">拖拽文件到此处，或点击选择文件</p>
+              </div>
+              <div id="uploadInfo" style="display:none;text-align:center;padding:12px">
+                <span id="uploadFileName" style="color:#1677ff;font-weight:500"></span>
+                <button class="btn btn-small" onclick="clearFile()" style="margin-left:8px">移除</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>构建子目录</label>
+            <input type="text" id="editBuildCwd2" placeholder="留空则用根目录">
+          </div>
+          <div class="form-group">
+            <label>打包目录 <small style="color:#999">（产物目录，如 dist）</small></label>
+            <input type="text" id="editPackDir2" placeholder="留空则打包整个目录">
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" onclick="closeEditModal()">取消</button>
+          <button class="btn btn-primary" onclick="saveEdit()">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal hidden">
+      <div class="modal-content">
+        <h3>🔐 认证失败 — 请输入凭证</h3>
+        <p id="authRepoName" style="color:#888;margin-bottom:12px"></p>
+        <input type="hidden" id="authRepoId">
+        <div id="authErrorMsg" style="color:#ff4d4f;font-size:13px;margin-bottom:12px;max-height:60px;overflow:hidden"></div>
+        <div class="form-group">
+          <label>用户名 <small style="color:#999">（GitHub 用任意值如 "token"，GitLab 用 "oauth2"）</small></label>
+          <input type="text" id="authUsername" placeholder="token / oauth2 / 你的用户名" autocomplete="off">
+        </div>
+        <div class="form-group" style="margin-top:8px">
+          <label>密码 / Personal Access Token</label>
+          <input type="password" id="authPassword" placeholder="ghp_xxx 或你的密码" autocomplete="off">
+        </div>
+        <div class="modal-actions">
+          <button class="btn" onclick="closeAuthModal()">取消</button>
+          <button class="btn btn-primary" onclick="submitAuth()">验证并保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task List -->
+    <section class="card">
+      <h2>构建任务</h2>
+      <div id="taskList" class="task-list">
+        <p class="empty">暂无任务</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
