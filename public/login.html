@@ -52,10 +52,11 @@
             password: document.getElementById('password').value
           })
         });
+        const data = await res.json();
         if (res.ok) {
+          localStorage.setItem('build_token', data.token);
           window.location.href = '/';
         } else {
-          const data = await res.json();
           document.getElementById('error').textContent = data.error || '登录失败';
         }
       } catch {

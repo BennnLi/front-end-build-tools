@@ -2,8 +2,15 @@ let currentBuildRepoId = null;
 let currentEditRepoId = null;
 let selectedScriptFile = null;
 
+function getToken() {
+  return localStorage.getItem('build_token') || '';
+}
+
 async function api(url, options = {}) {
   const headers = options.headers || {};
+  // Auth header
+  const token = getToken();
+  if (token) headers['Authorization'] = 'Bearer ' + token;
   // Only set Content-Type for JSON requests, not for FormData
   if (!(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
@@ -16,6 +23,7 @@ async function api(url, options = {}) {
   });
   if (!res.ok) {
     if (res.status === 401) {
+      localStorage.removeItem('build_token');
       window.location.href = '/login.html';
       throw new Error('未登录');
     }
@@ -412,7 +420,14 @@ async function triggerCleanup() {
 // ---- Logout ----
 
 async function logout() {
-  await fetch('/api/logout', { method: 'POST' });
+  const token = getToken();
+  if (token) {
+    await fetch('/api/logout', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+  }
+  localStorage.removeItem('build_token');
   window.location.href = '/login.html';
 }
 

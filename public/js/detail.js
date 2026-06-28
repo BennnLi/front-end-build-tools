@@ -1,10 +1,23 @@
+function getToken() {
+  return localStorage.getItem('build_token') || '';
+}
+
+function logout() {
+  localStorage.removeItem('build_token');
+  window.location.href = '/login.html';
+}
+
 async function api(url, options = {}) {
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options
-  });
+  const token = getToken();
+  const headers = { ...(options.headers || {}) };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+  const res = await fetch(url, { headers, ...options });
   if (!res.ok) {
     if (res.status === 401) {
+      localStorage.removeItem('build_token');
       window.location.href = '/login.html';
       throw new Error('未登录');
     }
