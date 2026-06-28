@@ -4,6 +4,10 @@ async function api(url, options = {}) {
     ...options
   });
   if (!res.ok) {
+    if (res.status === 401) {
+      window.location.href = '/login.html';
+      throw new Error('未登录');
+    }
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || 'Request failed');
   }

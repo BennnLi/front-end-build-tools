@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 — 构建工具</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .login-wrapper {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: #f0f2f5;
+    }
+    .login-card {
+      background: #fff; border-radius: 8px; padding: 40px;
+      width: 360px; box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    .login-card h1 { text-align: center; margin-bottom: 24px; font-size: 22px; }
+    .login-card .form-group { margin-bottom: 16px; }
+    .login-card .form-group input { width: 100%; padding: 10px 12px; font-size: 14px; }
+    .login-card .btn { width: 100%; padding: 10px; font-size: 15px; margin-top: 8px; }
+    .login-error { color: #ff4d4f; text-align: center; font-size: 13px; min-height: 20px; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <h1>🔧 构建工具</h1>
+      <form onsubmit="return doLogin(event)">
+        <div class="login-error" id="error"></div>
+        <div class="form-group">
+          <label>用户名</label>
+          <input type="text" id="username" autocomplete="off" required autofocus>
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">登 录</button>
+      </form>
+    </div>
+  </div>
+  <script>
+    async function doLogin(e) {
+      e.preventDefault();
+      document.getElementById('error').textContent = '';
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+          })
+        });
+        if (res.ok) {
+          window.location.href = '/';
+        } else {
+          const data = await res.json();
+          document.getElementById('error').textContent = data.error || '登录失败';
+        }
+      } catch {
+        document.getElementById('error').textContent = '网络错误，请重试';
+      }
+      return false;
+    }
+  </script>
+</body>
+</html>

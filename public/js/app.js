@@ -15,6 +15,10 @@ async function api(url, options = {}) {
       : options.body ? JSON.stringify(options.body) : undefined
   });
   if (!res.ok) {
+    if (res.status === 401) {
+      window.location.href = '/login.html';
+      throw new Error('未登录');
+    }
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || 'Request failed');
   }
@@ -404,6 +408,13 @@ async function triggerCleanup() {
     }
   });
 })();
+
+// ---- Logout ----
+
+async function logout() {
+  await fetch('/api/logout', { method: 'POST' });
+  window.location.href = '/login.html';
+}
 
 // ---- Helpers ----
 
