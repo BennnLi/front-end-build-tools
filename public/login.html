@@ -55,6 +55,7 @@
         const data = await res.json();
         if (res.ok) {
           localStorage.setItem('build_token', data.token);
+          localStorage.setItem('build_role', data.role);
           window.location.href = '/';
         } else {
           document.getElementById('error').textContent = data.error || '登录失败';

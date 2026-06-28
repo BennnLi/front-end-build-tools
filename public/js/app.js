@@ -6,6 +6,14 @@ function getToken() {
   return localStorage.getItem('build_token') || '';
 }
 
+function getRole() {
+  return localStorage.getItem('build_role') || 'user';
+}
+
+function isAdmin() {
+  return getRole() === 'admin';
+}
+
 async function api(url, options = {}) {
   const headers = options.headers || {};
   // Auth header
@@ -24,8 +32,12 @@ async function api(url, options = {}) {
   if (!res.ok) {
     if (res.status === 401) {
       localStorage.removeItem('build_token');
+      localStorage.removeItem('build_role');
       window.location.href = '/login.html';
       throw new Error('未登录');
+    }
+    if (res.status === 403) {
+      throw new Error('需要管理员权限');
     }
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || 'Request failed');
@@ -57,10 +69,10 @@ async function loadRepos() {
         ${authWarn}
       </div>
       <div class="repo-actions">
-        ${r.authStatus === 'error' ? `<button class="btn btn-small" style="background:#fff7e6;color:#d48806;border-color:#ffd591" onclick="openAuthModal('${r.id}')">🔐 认证</button>` : ''}
+        ${isAdmin() && r.authStatus === 'error' ? `<button class="btn btn-small" style="background:#fff7e6;color:#d48806;border-color:#ffd591" onclick="openAuthModal('${r.id}')">🔐 认证</button>` : ''}
         <button class="btn btn-primary btn-small" onclick="openBuildModal('${r.id}')">构建</button>
-        <button class="btn btn-small" onclick="openEditModal('${r.id}')">编辑</button>
-        <button class="btn btn-small btn-danger" onclick="deleteRepo('${r.id}', '${escapeHtml(r.name)}')">删除</button>
+        ${isAdmin() ? `<button class="btn btn-small" onclick="openEditModal('${r.id}')">编辑</button>` : ''}
+        ${isAdmin() ? `<button class="btn btn-small btn-danger" onclick="deleteRepo('${r.id}', '${escapeHtml(r.name)}')">删除</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -355,7 +367,7 @@ async function loadTasks() {
       <span class="status status-${t.status}">${statusText(t.status)}</span>
       <div class="task-actions">
         ${t.status === 'success' ? `<a class="btn btn-small btn-success" href="/api/tasks/${t.id}/download">下载</a>` : ''}
-        ${t.status === 'success' || t.status === 'failed' ? `<button class="btn btn-small btn-danger" onclick="deleteTask(${t.id})">删除</button>` : ''}
+        ${isAdmin() && (t.status === 'success' || t.status === 'failed') ? `<button class="btn btn-small btn-danger" onclick="deleteTask(${t.id})">删除</button>` : ''}
       </div>
     </div>
   `).join('');
@@ -428,6 +440,7 @@ async function logout() {
     });
   }
   localStorage.removeItem('build_token');
+  localStorage.removeItem('build_role');
   window.location.href = '/login.html';
 }
 
@@ -472,10 +485,20 @@ function startAutoRefresh() {
   }, 5000);
 }
 
-// Init — check auth first
+// Init — check auth first, then apply role-based visibility
 if (!getToken()) {
   window.location.href = '/login.html';
 } else {
+  // Hide admin-only UI for regular users
+  if (!isAdmin()) {
+    // Hide add repo form section
+    const addCard = document.querySelector('#addRepoForm').closest('.card');
+    if (addCard) addCard.style.display = 'none';
+    // Hide cleanup button
+    const cleanupBtn = document.querySelector('.btn-danger[onclick="triggerCleanup()"]');
+    if (cleanupBtn) cleanupBtn.style.display = 'none';
+  }
+
   loadRepos();
   loadTasks();
   startAutoRefresh();

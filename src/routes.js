@@ -11,6 +11,14 @@ const log = require('./logger').createLogger('api');
 const SCRIPTS_DIR = path.join(__dirname, '..', 'data', 'scripts');
 fs.mkdirSync(SCRIPTS_DIR, { recursive: true });
 
+// Admin-only route guard
+function requireAdmin(req, res, next) {
+  if (req.role !== 'admin') {
+    return res.status(403).json({ error: '需要管理员权限' });
+  }
+  next();
+}
+
 // Multer config for script file uploads
 const upload = multer({
   dest: SCRIPTS_DIR,
@@ -47,8 +55,8 @@ router.get('/api/repos', (req, res) => {
   res.json(repos);
 });
 
-// Add repo
-router.post('/api/repos', async (req, res) => {
+// Add repo (admin only)
+router.post('/api/repos', requireAdmin, async (req, res) => {
   const { name, url, buildScript, buildCwd, scriptType, scriptFile, packDir } = req.body;
   if (!name || !url) {
     return res.status(400).json({ error: 'name and url are required' });
@@ -71,15 +79,15 @@ router.post('/api/repos', async (req, res) => {
   res.json(repo);
 });
 
-// Update repo
-router.put('/api/repos/:id', (req, res) => {
+// Update repo (admin only)
+router.put('/api/repos/:id', requireAdmin, (req, res) => {
   const repo = db.updateRepo(req.params.id, req.body);
   if (!repo) return res.status(404).json({ error: 'Repo not found' });
   res.json(repo);
 });
 
-// Delete repo
-router.delete('/api/repos/:id', (req, res) => {
+// Delete repo (admin only)
+router.delete('/api/repos/:id', requireAdmin, (req, res) => {
   const repo = db.getRepo(req.params.id);
   db.deleteRepo(req.params.id);
   if (repo) log.info(`Repo deleted: ${repo.name}`);
@@ -109,8 +117,8 @@ router.get('/api/repos/:id/branches', async (req, res) => {
   }
 });
 
-// Upload script file for a repo
-router.post('/api/repos/:id/script', upload.single('script'), (req, res) => {
+// Upload script file for a repo (admin only)
+router.post('/api/repos/:id/script', requireAdmin, upload.single('script'), (req, res) => {
   const repo = db.getRepo(req.params.id);
   if (!repo) return res.status(404).json({ error: 'Repo not found' });
 
@@ -157,8 +165,8 @@ router.get('/api/repos/:id/script', (req, res) => {
   }
 });
 
-// Set git credentials for a repo
-router.post('/api/repos/:id/auth', async (req, res) => {
+// Set git credentials for a repo (admin only)
+router.post('/api/repos/:id/auth', requireAdmin, async (req, res) => {
   const repo = db.getRepo(req.params.id);
   if (!repo) return res.status(404).json({ error: 'Repo not found' });
 
@@ -190,8 +198,8 @@ router.post('/api/repos/:id/auth', async (req, res) => {
   }
 });
 
-// Clear stored credentials
-router.delete('/api/repos/:id/auth', (req, res) => {
+// Clear stored credentials (admin only)
+router.delete('/api/repos/:id/auth', requireAdmin, (req, res) => {
   const repo = db.getRepo(req.params.id);
   if (!repo) return res.status(404).json({ error: 'Repo not found' });
   db.setRepoCredentials(repo.id, '', '');
@@ -306,8 +314,8 @@ router.get('/api/tasks/:id/download', (req, res) => {
   res.download(task.artifactPath, fileName);
 });
 
-// Delete task
-router.delete('/api/tasks/:id', (req, res) => {
+// Delete task (admin only)
+router.delete('/api/tasks/:id', requireAdmin, (req, res) => {
   const task = db.getTask(Number(req.params.id));
   if (task) {
     // Clean up artifact and log
@@ -322,8 +330,8 @@ router.delete('/api/tasks/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-// Manual cleanup trigger
-router.post('/api/cleanup', (req, res) => {
+// Manual cleanup trigger (admin only)
+router.post('/api/cleanup', requireAdmin, (req, res) => {
   const cleaner = require('./cleaner');
   log.info('Manual cleanup triggered');
   cleaner.cleanup();

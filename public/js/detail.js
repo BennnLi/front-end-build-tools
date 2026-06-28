@@ -4,6 +4,7 @@ function getToken() {
 
 function logout() {
   localStorage.removeItem('build_token');
+  localStorage.removeItem('build_role');
   window.location.href = '/login.html';
 }
 

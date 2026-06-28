@@ -10,11 +10,13 @@ const log = logger.createLogger('server');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Default credentials
-const DEFAULT_USER = process.env.BUILD_USER || 'admin';
-const DEFAULT_PASS = process.env.BUILD_PASS || 'admin';
+// User accounts: username -> { password, role }
+const USERS = {
+  admin: { password: process.env.ADMIN_PASS || 'admin', role: 'admin' },
+  user:  { password: process.env.USER_PASS  || 'user',  role: 'user' }
+};
 
-// Token store: token -> { user, expiresAt }
+// Token store: token -> { user, role, expiresAt }
 const TOKEN_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
 const tokens = new Map();
 
@@ -29,14 +31,14 @@ function validateToken(token) {
     tokens.delete(token);
     return null;
   }
-  return entry.user;
+  return { user: entry.user, role: entry.role };
 }
 
 // ---- Middleware ----
 
 app.use(express.json());
 
-// ---- Public routes (no auth required) ----
+// ---- Public routes ----
 
 app.get('/login.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
@@ -44,14 +46,16 @@ app.get('/login.html', (req, res) => {
 
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  if (username === DEFAULT_USER && password === DEFAULT_PASS) {
+  const account = USERS[username];
+  if (account && account.password === password) {
     const token = generateToken();
     tokens.set(token, {
       user: username,
+      role: account.role,
       expiresAt: Date.now() + TOKEN_TTL
     });
-    log.info(`User "${username}" logged in, token expires in 30 days`);
-    return res.json({ ok: true, token, expiresIn: TOKEN_TTL / 1000 });
+    log.info(`User "${username}" (${account.role}) logged in, token expires in 30 days`);
+    return res.json({ ok: true, token, role: account.role, expiresIn: TOKEN_TTL / 1000 });
   }
   log.warn(`Failed login attempt for "${username}"`);
   res.status(401).json({ error: '用户名或密码错误' });
@@ -72,23 +76,23 @@ app.post('/api/logout', (req, res) => {
 // ---- Auth middleware (API only) ----
 
 app.use('/api', (req, res, next) => {
-  // Login endpoint is public
   if (req.path === '/login') return next();
 
   const auth = req.headers.authorization;
   const token = auth && auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  const user = token ? validateToken(token) : null;
+  const session = token ? validateToken(token) : null;
 
-  if (!user) {
+  if (!session) {
     return res.status(401).json({ error: '未登录或 token 已过期' });
   }
+  req.user = session.user;
+  req.role = session.role;
   next();
 });
 
-// ---- Static files (public) ----
+// ---- Static files ----
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Root → index.html (auth checked by client-side JS)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
