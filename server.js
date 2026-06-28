@@ -1,5 +1,6 @@
 const express = require('express');
 const crypto = require('crypto');
+const os = require('os');
 const path = require('path');
 const builder = require('./src/builder');
 const cleaner = require('./src/cleaner');
@@ -126,7 +127,23 @@ process.on('unhandledRejection', (reason) => {
   log.error(`Unhandled rejection: ${reason}`, { stack: reason?.stack });
 });
 
-app.listen(PORT, () => {
-  log.info(`Build tool started on http://localhost:${PORT}`);
-  log.info(`Environment: ${process.platform}, Node: ${process.version}`);
+function getLanIp() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      // Skip internal (127.0.0.1) and non-IPv4
+      if (!iface.internal && iface.family === 'IPv4') {
+        return iface.address;
+      }
+    }
+  }
+  return null;
+}
+
+app.listen(PORT, '0.0.0.0', () => {
+  const lanIp = getLanIp();
+  log.info(`Build tool started`);
+  log.info(`  Local:   http://localhost:${PORT}`);
+  if (lanIp) log.info(`  Network: http://${lanIp}:${PORT}`);
+  log.info(`  Environment: ${process.platform}, Node: ${process.version}`);
 });
