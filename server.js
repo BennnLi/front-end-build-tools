@@ -127,23 +127,38 @@ process.on('unhandledRejection', (reason) => {
   log.error(`Unhandled rejection: ${reason}`, { stack: reason?.stack });
 });
 
-function getLanIp() {
+function getLanIps() {
   const interfaces = os.networkInterfaces();
+  const addrs = [];
   for (const name of Object.keys(interfaces)) {
     for (const iface of interfaces[name]) {
-      // Skip internal (127.0.0.1) and non-IPv4
       if (!iface.internal && iface.family === 'IPv4') {
-        return iface.address;
+        addrs.push({ address: iface.address, name });
       }
     }
   }
-  return null;
+  // Prefer common LAN subnets: 192.168.x.x, 10.x.x.x, 172.16-31.x.x
+  const isPreferred = (ip) => {
+    if (ip.startsWith('192.168.')) return true;
+    if (ip.startsWith('10.')) return true;
+    const m = ip.match(/^172\.(\d+)\./);
+    if (m) { const b = +m[1]; if (b >= 16 && b <= 31) return true; }
+    return false;
+  };
+  addrs.sort((a, b) => {
+    if (isPreferred(a.address) && !isPreferred(b.address)) return -1;
+    if (!isPreferred(a.address) && isPreferred(b.address)) return 1;
+    return 0;
+  });
+  return addrs;
 }
 
 app.listen(PORT, '0.0.0.0', () => {
-  const lanIp = getLanIp();
+  const ips = getLanIps();
   log.info(`Build tool started`);
   log.info(`  Local:   http://localhost:${PORT}`);
-  if (lanIp) log.info(`  Network: http://${lanIp}:${PORT}`);
+  if (ips.length > 0) {
+    ips.forEach(ip => log.info(`  Network: http://${ip.address}:${PORT}  (${ip.name})`));
+  }
   log.info(`  Environment: ${process.platform}, Node: ${process.version}`);
 });
