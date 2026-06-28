@@ -146,10 +146,13 @@ async function openEditModal(repoId) {
       const res = await fetch(`/api/repos/${repoId}/script`, {
         headers: { 'Authorization': 'Bearer ' + getToken() }
       });
-      const text = await res.text();
-      document.getElementById('editBuildScript').value = text;
+      if (res.ok) {
+        document.getElementById('editBuildScript').value = await res.text();
+      } else {
+        document.getElementById('editBuildScript').value = repo.buildScript || '';
+      }
     } catch {
-      document.getElementById('editBuildScript').value = repo.buildScript;
+      document.getElementById('editBuildScript').value = repo.buildScript || '';
     }
     switchTab('inline');
   }
