@@ -112,6 +112,8 @@ async function cloneOrFetch(repoUrl, repoId, credentials = null) {
   if (isGitRepo(repoPath)) {
     log.info(`Fetching: ${repoUrl}`);
     await execGit(['remote', 'set-url', 'origin', url], repoPath);
+    // git 2.53.0: bare clone 不会自动配置 fetch refspec，手动补上
+    await execGit(['config', 'remote.origin.fetch', '+refs/heads/*:refs/heads/*'], repoPath);
     await execGit(['fetch', '--all', '--prune'], repoPath);
     await execGit(['remote', 'set-url', 'origin', repoUrl], repoPath);
   } else {
@@ -121,6 +123,8 @@ async function cloneOrFetch(repoUrl, repoId, credentials = null) {
     }
     fs.mkdirSync(repoPath, { recursive: true });
     await execGit(['clone', '--bare', url, repoPath]);
+    // git 2.53.0: bare clone 不会自动配置 fetch refspec，手动补上
+    await execGit(['config', 'remote.origin.fetch', '+refs/heads/*:refs/heads/*'], repoPath);
     await execGit(['remote', 'set-url', 'origin', repoUrl], repoPath);
   }
 }

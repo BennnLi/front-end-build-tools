@@ -103,9 +103,15 @@ router.get('/api/repos/:id/commits', async (req, res) => {
   if (!branch) return res.status(400).json({ error: 'branch query param required' });
 
   try {
+    const creds = db.getRepoCredentials(repo.id);
+    await git.cloneOrFetch(repo.url, repo.id, creds);
     const commits = await git.getLatestCommits(repo.id, branch, 5);
     res.json(commits);
   } catch (err) {
+    if (err.isAuthError) {
+      db.markRepoAuthError(repo.id);
+      return res.status(401).json({ error: err.message, authError: true });
+    }
     res.status(500).json({ error: err.message });
   }
 });
