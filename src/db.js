@@ -45,7 +45,7 @@ function getRepo(id) {
   return read().repos.find(r => r.id === id) || null;
 }
 
-function addRepo({ name, url, buildScript, buildCwd, scriptType, scriptFile, packDir }) {
+function addRepo({ name, url, buildScript, buildCwd, scriptType, scriptFile, packDir, authUser, authPass }) {
   const data = read();
   const repo = {
     id: require('uuid').v4(),
@@ -57,8 +57,8 @@ function addRepo({ name, url, buildScript, buildCwd, scriptType, scriptFile, pac
     scriptFile: scriptFile || '',        // path to uploaded script file
     packDir: packDir || '',              // subdirectory to package (relative to buildCwd), e.g. "dist"
     authStatus: 'ok',                    // 'ok' | 'error' — authentication status
-    authUser: '',                        // temporary credential username
-    authPass: '',                        // temporary credential password/token
+    authUser: authUser || '',            // git credential username
+    authPass: authPass || '',            // git credential password/token
     createdAt: new Date().toISOString()
   };
   data.repos.push(repo);

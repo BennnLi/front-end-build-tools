@@ -57,15 +57,16 @@ router.get('/api/repos', (req, res) => {
 
 // Add repo (admin only)
 router.post('/api/repos', requireAdmin, async (req, res) => {
-  const { name, url, buildScript, buildCwd, scriptType, scriptFile, packDir } = req.body;
+  const { name, url, buildScript, buildCwd, scriptType, scriptFile, packDir, authUser, authPass } = req.body;
   if (!name || !url) {
     return res.status(400).json({ error: 'name and url are required' });
   }
-  const repo = db.addRepo({ name, url, buildScript, buildCwd, scriptType, scriptFile, packDir });
-  log.info(`Repo added: ${name}`, { url });
+  const repo = db.addRepo({ name, url, buildScript, buildCwd, scriptType, scriptFile, packDir, authUser, authPass });
+  log.info(`Repo added: ${name}`, { url, hasAuth: !!(authUser && authPass) });
 
-  // Clone in background — uses host credentials by default
-  git.cloneOrFetch(url, repo.id).then(() => {
+  // Clone in background — uses provided credentials if set, otherwise host credentials
+  const creds = (authUser && authPass) ? { user: authUser, pass: authPass } : null;
+  git.cloneOrFetch(url, repo.id, creds).then(() => {
     log.info(`Repo cloned successfully: ${name}`);
   }).catch(err => {
     if (err.isAuthError) {

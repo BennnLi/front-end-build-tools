@@ -33,6 +33,16 @@
         </div>
         <div class="form-row">
           <div class="form-group">
+            <label>Git 用户名 <small style="color:#999">（可选，用于私有仓库认证）</small></label>
+            <input type="text" id="authUser" placeholder="token / oauth2 / 你的用户名" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>Git 密码 / Token <small style="color:#999">（可选）</small></label>
+            <input type="password" id="authPass" placeholder="ghp_xxx 或你的密码" autocomplete="off">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
             <label>构建子目录 <small style="color:#999">（脚本执行位置）</small></label>
             <input type="text" id="buildCwd" placeholder="留空则用根目录">
           </div>
@@ -100,6 +110,16 @@
             <label>打包目录 <small style="color:#999">（产物目录，如 dist）</small></label>
             <input type="text" id="editPackDir" placeholder="留空则打包整个目录">
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Git 用户名 <small style="color:#999">（可选，留空不修改）</small></label>
+              <input type="text" id="editAuthUser" placeholder="token / oauth2 / 你的用户名" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Git 密码 / Token <small style="color:#999">（可选，留空不修改）</small></label>
+              <input type="password" id="editAuthPass" placeholder="留空则保持原有凭证" autocomplete="off">
+            </div>
+          </div>
         </div>
         <div id="tabFile" class="tab-content hidden">
           <div class="form-group">
@@ -122,6 +142,16 @@
           <div class="form-group">
             <label>打包目录 <small style="color:#999">（产物目录，如 dist）</small></label>
             <input type="text" id="editPackDir2" placeholder="留空则打包整个目录">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Git 用户名 <small style="color:#999">（可选，留空不修改）</small></label>
+              <input type="text" id="editAuthUser2" placeholder="token / oauth2 / 你的用户名" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Git 密码 / Token <small style="color:#999">（可选，留空不修改）</small></label>
+              <input type="password" id="editAuthPass2" placeholder="留空则保持原有凭证" autocomplete="off">
+            </div>
           </div>
         </div>
         <div class="modal-actions">

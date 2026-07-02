@@ -85,11 +85,13 @@ async function addRepo(e) {
   const buildScript = document.getElementById('buildScript').value;
   const buildCwd = document.getElementById('buildCwd').value;
   const packDir = document.getElementById('packDir').value;
+  const authUser = document.getElementById('authUser').value.trim();
+  const authPass = document.getElementById('authPass').value.trim();
 
   try {
     await api('/api/repos', {
       method: 'POST',
-      body: { name, url, buildScript, buildCwd, packDir, scriptType: 'inline' }
+      body: { name, url, buildScript, buildCwd, packDir, scriptType: 'inline', authUser, authPass }
     });
     document.getElementById('addRepoForm').reset();
     document.getElementById('buildScript').value = 'npm install && npx vite build';
@@ -126,6 +128,16 @@ async function openEditModal(repoId) {
   document.getElementById('editBuildCwd2').value = repo.buildCwd || '';
   document.getElementById('editPackDir').value = repo.packDir || '';
   document.getElementById('editPackDir2').value = repo.packDir || '';
+  // Auth fields: show placeholder if credentials exist (masked as '***' from API)
+  const hasCreds = repo.authUser === '***';
+  document.getElementById('editAuthUser').placeholder = hasCreds ? '已设置（输入新值将覆盖）' : 'token / oauth2 / 你的用户名';
+  document.getElementById('editAuthUser').value = '';
+  document.getElementById('editAuthPass').placeholder = hasCreds ? '已设置（输入新值将覆盖）' : '留空则保持原有凭证';
+  document.getElementById('editAuthPass').value = '';
+  document.getElementById('editAuthUser2').placeholder = hasCreds ? '已设置（输入新值将覆盖）' : 'token / oauth2 / 你的用户名';
+  document.getElementById('editAuthUser2').value = '';
+  document.getElementById('editAuthPass2').placeholder = hasCreds ? '已设置（输入新值将覆盖）' : '留空则保持原有凭证';
+  document.getElementById('editAuthPass2').value = '';
   selectedScriptFile = null;
   document.getElementById('uploadInfo').style.display = 'none';
   document.getElementById('uploadPrompt').style.display = 'block';
@@ -207,14 +219,18 @@ async function saveEdit() {
       const buildScript = document.getElementById('editBuildScript').value;
       const buildCwd = document.getElementById('editBuildCwd').value;
       const packDir = document.getElementById('editPackDir').value;
-      await api(`/api/repos/${repoId}`, {
-        method: 'PUT',
-        body: { buildScript, buildCwd: buildCwd || '', packDir: packDir || '', scriptType: 'inline', scriptFile: '' }
-      });
+      const authUser = document.getElementById('editAuthUser').value.trim();
+      const authPass = document.getElementById('editAuthPass').value.trim();
+      const body = { buildScript, buildCwd: buildCwd || '', packDir: packDir || '', scriptType: 'inline', scriptFile: '' };
+      // Only send auth if both fields are filled
+      if (authUser && authPass) { body.authUser = authUser; body.authPass = authPass; }
+      await api(`/api/repos/${repoId}`, { method: 'PUT', body });
     } else {
       // Save file script
       const buildCwd = document.getElementById('editBuildCwd2').value;
       const packDir = document.getElementById('editPackDir2').value;
+      const authUser = document.getElementById('editAuthUser2').value.trim();
+      const authPass = document.getElementById('editAuthPass2').value.trim();
 
       if (selectedScriptFile) {
         // Upload the script file
@@ -227,11 +243,10 @@ async function saveEdit() {
         }).then(r => r.json());
       }
 
-      // Update buildCwd and packDir
-      await api(`/api/repos/${repoId}`, {
-        method: 'PUT',
-        body: { buildCwd: buildCwd || '', packDir: packDir || '' }
-      });
+      // Update buildCwd, packDir, and optionally auth
+      const body = { buildCwd: buildCwd || '', packDir: packDir || '' };
+      if (authUser && authPass) { body.authUser = authUser; body.authPass = authPass; }
+      await api(`/api/repos/${repoId}`, { method: 'PUT', body });
     }
 
     closeEditModal();
