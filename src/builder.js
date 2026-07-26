@@ -215,9 +215,14 @@ function runScript(script, cwd, logStream) {
     const shell = isWindows ? 'cmd.exe' : '/bin/sh';
     const shellArgs = isWindows ? ['/c', script] : ['-c', script];
 
+    // Strip NODE_ENV to prevent npm install from skipping devDependencies
+    // (builds need devDeps like vite, @vitejs/plugin-vue, etc.)
+    const env = { ...process.env };
+    delete env.NODE_ENV;
+
     const child = spawn(shell, shellArgs, {
       cwd,
-      env: { ...process.env },
+      env,
       stdio: ['ignore', 'pipe', 'pipe']
     });
 
