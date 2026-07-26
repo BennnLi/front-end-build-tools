@@ -19,15 +19,14 @@ npm run dev      # 开发模式（文件变更自动重启）
 | `admin` | `admin` | 完全管理权限 |
 | `user` | `user` | 查看 + 构建 + 下载 |
 
-自定义密码：
+首次启动前，复制 `.env` 并修改密码：
 
 ```bash
-# Linux / Mac
-ADMIN_PASS=xxx USER_PASS=yyy npm start
-
-# Windows PowerShell
-$env:ADMIN_PASS="xxx"; $env:USER_PASS="yyy"; npm start
+cp .env .env.local    # .env.local 不会被提交到 Git
+# 编辑 .env.local，将 ADMIN_PASS 和 USER_PASS 改为你自己的强密码
 ```
+
+项目启动时会自动加载 `.env` 文件（优先级：`.env.local` > `.env`）。
 
 ## 功能
 
@@ -118,9 +117,11 @@ CGO_ENABLED=0 go build -o app .
 
 ## 环境变量
 
+通过 `.env` 或 `.env.local` 文件配置（`.env.local` 优先，且不会被 Git 追踪）。
+
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
-| `PORT` | 服务端口 | `3000` |
+| `PORT` | 服务端口 | `9768` |
 | `ADMIN_PASS` | admin 密码 | `admin` |
 | `USER_PASS` | user 密码 | `user` |
 | `LOG_LEVEL` | 日志级别 | `info` |

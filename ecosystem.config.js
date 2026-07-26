@@ -1,3 +1,6 @@
+require('dotenv').config();
+require('dotenv').config({ path: '.env.local', override: true });
+
 module.exports = {
   apps: [
     {
@@ -8,7 +11,7 @@ module.exports = {
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
-        PORT: 3000
+        PORT: 9768
       },
       // Log configuration
       log_date_format: 'YYYY-MM-DD HH:mm:ss',

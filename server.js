@@ -1,3 +1,6 @@
+require('dotenv').config();           // base config
+require('dotenv').config({ path: '.env.local', override: true });  // local overrides
+
 const express = require('express');
 const crypto = require('crypto');
 const os = require('os');
@@ -9,7 +12,7 @@ const logger = require('./src/logger');
 
 const log = logger.createLogger('server');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 9768;
 
 // User accounts: username -> { password, role }
 const USERS = {
