@@ -69,9 +69,9 @@ function execGit(args, cwd, envOverrides = {}) {
         }
         if (stderr && isSoftFail(stderr)) {
           log.warn(`git ${args[0]}: ${stderr.trim().split('\n')[0]}`);
-        } else {
-          log.error(`git ${args[0]} failed: ${(stderr || err.message).trim().split('\n')[0]}`);
+          return resolve(stdout ? stdout.trim() : '');
         }
+        log.error(`git ${args[0]} failed: ${(stderr || err.message).trim().split('\n')[0]}`);
         return reject(new Error(stderr || err.message));
       }
       resolve(stdout.trim());
